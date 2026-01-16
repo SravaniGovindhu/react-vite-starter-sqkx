@@ -1,119 +1,71 @@
-import { useState } from "react";
-import "./App.css";
+import './App.css';
 
-export default function App() {
-  // Timeline (0–24 hours)
-  const [time, setTime] = useState(12);
-
-  // Simulated power states
-  const system = {
-    mainBoard: time > 5 && time < 22,
-    boards: [
-      { id: "DB-1", load: time % 2 === 0 ? 5.2 : 0 },
-      { id: "DB-2", load: time % 3 === 0 ? 3.8 : 0 },
-      { id: "DB-3", load: time % 4 === 0 ? 6.5 : 0 },
-    ],
-  };
-
-  // Wire color logic
-  const getColor = (powerOn, load) => {
-    if (!powerOn) return "red";
-    if (load > 0) return "green";
-    return "yellow";
-  };
-
+function App() {
   return (
     <div style={styles.page}>
-      <h2>⚡ Power Distribution Monitoring</h2>
+      <h1 style={styles.title}>Power Distribution Monitoring</h1>
 
-      {/* Timeline */}
-      <div style={styles.slider}>
-        <span>Time: {time}:00</span>
-        <input
-          type="range"
-          min="0"
-          max="24"
-          value={time}
-          onChange={(e) => setTime(Number(e.target.value))}
-        />
+      <div style={styles.cardContainer}>
+        <div style={styles.card}>
+          <h3>Voltage</h3>
+          <p style={styles.value}>230 V</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Current</h3>
+          <p style={styles.value}>12.5 A</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Power</h3>
+          <p style={styles.value}>2.8 kW</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Status</h3>
+          <p style={{ ...styles.value, color: "green" }}>Normal</p>
+        </div>
       </div>
 
-      {/* Main Board */}
-      <div style={styles.board}>
-        <strong>Main Board</strong>
-        <div>Status: {system.mainBoard ? "ON" : "OFF"}</div>
-      </div>
-
-      {/* Distribution Boards */}
-      <div style={styles.container}>
-        {system.boards.map((db) => {
-          const color = getColor(system.mainBoard, db.load);
-          return (
-            <div key={db.id} style={styles.dbBlock}>
-              <div
-                style={{
-                  ...styles.wire,
-                  backgroundColor: color,
-                }}
-                title={`Load: ${db.load} kW`}
-              />
-              <div style={styles.db}>
-                <strong>{db.id}</strong>
-                <div>{db.load > 0 ? `${db.load} kW` : "No Load"}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Legend */}
-      <div style={styles.legend}>
-        <span style={{ color: "green" }}>■ Power + Load</span>
-        <span style={{ color: "yellow" }}>■ Power ON, No Load</span>
-        <span style={{ color: "red" }}>■ Power OFF</span>
-      </div>
+      <p style={styles.footer}>
+        Deployed using <b>Zoho Catalyst (React + Vite)</b>
+      </p>
     </div>
   );
 }
 
 const styles = {
   page: {
-    fontFamily: "Arial",
-    padding: 20,
-    background: "#f5f7fa",
+    padding: "30px",
+    fontFamily: "Arial, sans-serif",
+    backgroundColor: "#f4f6f8",
+    minHeight: "100vh"
   },
-  slider: {
-    marginBottom: 20,
-  },
-  board: {
-    padding: 15,
-    background: "#ffffff",
-    borderRadius: 8,
-    marginBottom: 20,
-    width: 200,
-  },
-  container: {
-    display: "flex",
-    gap: 20,
-  },
-  dbBlock: {
+  title: {
     textAlign: "center",
+    marginBottom: "30px"
   },
-  wire: {
-    height: 6,
-    width: 100,
-    marginBottom: 6,
-    borderRadius: 3,
+  cardContainer: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "20px"
   },
-  db: {
-    padding: 10,
-    background: "#ffffff",
-    borderRadius: 6,
-    width: 100,
+  card: {
+    backgroundColor: "#ffffff",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    textAlign: "center"
   },
-  legend: {
-    marginTop: 30,
-    display: "flex",
-    gap: 20,
+  value: {
+    fontSize: "22px",
+    fontWeight: "bold"
   },
+  footer: {
+    marginTop: "40px",
+    textAlign: "center",
+    color: "#555"
+  }
 };
+
+export default App;
