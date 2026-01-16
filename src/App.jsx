@@ -1,60 +1,141 @@
-import React from "react";
-import "./App.css";
+import { useState } from "react";
 
 function App() {
+  const [time, setTime] = useState(12);
+
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>Welcome to Zoho Catalyst</h1>
+    <div style={styles.page}>
+      {/* Header */}
+      <h1 style={styles.title}>Power Distribution Monitoring</h1>
 
-      <p style={styles.text}>
-        Your Vite + React application has been deployed successfully.
-      </p>
-
-      <div style={styles.card}>
-        <h2>Deployment Status</h2>
-        <p>✅ Build Successful</p>
-        <p>✅ Page Loaded</p>
+      {/* Timeline */}
+      <div style={styles.timeline}>
+        <span>00:00</span>
+        <input
+          type="range"
+          min="0"
+          max="24"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <span>{time}:00</span>
       </div>
 
-      <footer style={styles.footer}>
-        <p>Powered by Vite + React</p>
-      </footer>
+      {/* Layout */}
+      <div style={styles.layout}>
+        {/* Main Board */}
+        <div style={styles.board}>
+          <h3>Main Board</h3>
+          <p>Voltage: 415 V</p>
+          <p>Power: 480 kW</p>
+          <span style={styles.greenDot}></span>
+        </div>
+
+        {/* Distribution Boards */}
+        <div style={styles.column}>
+          <div style={styles.board}>
+            <h4>DB-1</h4>
+            <p>Load: 85 kW</p>
+            <span style={styles.greenDot}></span>
+          </div>
+
+          <div style={styles.board}>
+            <h4>DB-2</h4>
+            <p>Load: 78 kW</p>
+            <span style={styles.yellowDot}></span>
+          </div>
+
+          <div style={styles.board}>
+            <h4>DB-3</h4>
+            <p>Load: 62 kW</p>
+            <span style={styles.greenDot}></span>
+          </div>
+        </div>
+
+        {/* Loads */}
+        <div style={styles.column}>
+          <div style={styles.load}>Load 1 – 32 kW</div>
+          <div style={styles.load}>Load 2 – 18 kW</div>
+          <div style={styles.load}>Load 3 – 45 kW</div>
+          <div style={styles.load}>Load 4 – 28 kW</div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={styles.footer}>
+        <span style={{ color: "lime" }}>● Operational</span>
+        <span style={{ color: "gold" }}>● Warning</span>
+        <span style={{ color: "red" }}>● Critical</span>
+      </div>
     </div>
   );
 }
 
+/* ---------- STYLES ---------- */
+
 const styles = {
-  container: {
+  page: {
+    background: "#0f172a",
     minHeight: "100vh",
+    padding: 20,
+    color: "#e5e7eb",
+    fontFamily: "Arial"
+  },
+  title: {
+    marginBottom: 20
+  },
+  timeline: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 30
+  },
+  layout: {
+    display: "flex",
+    gap: 40
+  },
+  column: {
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f4f6f8",
-    fontFamily: "Arial, sans-serif",
-    padding: "20px",
+    gap: 20
   },
-  heading: {
-    color: "#2c3e50",
-    marginBottom: "10px",
+  board: {
+    background: "#1e293b",
+    padding: 16,
+    borderRadius: 8,
+    position: "relative",
+    width: 200
   },
-  text: {
-    color: "#555",
-    marginBottom: "20px",
-    fontSize: "16px",
+  load: {
+    background: "#1e293b",
+    padding: 12,
+    borderRadius: 6,
+    width: 200
   },
-  card: {
-    backgroundColor: "#ffffff",
-    padding: "20px 30px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-    textAlign: "center",
+  greenDot: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    background: "lime"
+  },
+  yellowDot: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    background: "gold"
   },
   footer: {
-    marginTop: "30px",
-    fontSize: "14px",
-    color: "#888",
-  },
+    marginTop: 40,
+    display: "flex",
+    gap: 20
+  }
 };
 
 export default App;
