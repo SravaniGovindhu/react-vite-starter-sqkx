@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./App.css";
+
 
 export default function App() {
   // ===== SAMPLE LIVE DATA (replace later from DB/API) =====
