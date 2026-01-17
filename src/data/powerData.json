@@ -1,30 +1,41 @@
 [
   {
     "time": "10:00",
-    "main": 15,
-    "db1": { "total": 6, "l1": 3, "l2": 3 },
-    "db2": { "total": 9, "l1": 6, "l2": 3 },
-    "db3": { "total": 7, "l1": 4, "l2": 3 }
+    "Main Board": 15,
+    "DB-1": 5,
+    "DB1 Load 1": 2,
+    "DB1 Load 2": 3,
+    "DB-2": 8,
+    "DB2 Load 1": 4,
+    "DB2 Load 2": 4,
+    "DB-3": 6,
+    "DB3 Load 1": 3,
+    "DB3 Load 2": 3
   },
   {
     "time": "10:05",
-    "main": 18,
-    "db1": { "total": 8, "l1": 5, "l2": 3 },
-    "db2": { "total": 6, "l1": 4, "l2": 2 },
-    "db3": { "total": 4, "l1": 4, "l2": 0 }
+    "Main Board": 18,
+    "DB-1": 6,
+    "DB1 Load 1": 3,
+    "DB1 Load 2": 3,
+    "DB-2": 9,
+    "DB2 Load 1": 5,
+    "DB2 Load 2": 4,
+    "DB-3": 7,
+    "DB3 Load 1": 4,
+    "DB3 Load 2": 3
   },
   {
     "time": "10:10",
-    "main": 12,
-    "db1": { "total": 0, "l1": 0, "l2": 0 },
-    "db2": { "total": 5, "l1": 3, "l2": 2 },
-    "db3": { "total": 7, "l1": 4, "l2": 3 }
-  },
-  {
-    "time": "10:15",
-    "main": 0,
-    "db1": { "total": 0, "l1": 0, "l2": 0 },
-    "db2": { "total": 0, "l1": 0, "l2": 0 },
-    "db3": { "total": 0, "l1": 0, "l2": 0 }
+    "Main Board": 12,
+    "DB-1": 4,
+    "DB1 Load 1": 2,
+    "DB1 Load 2": 2,
+    "DB-2": 6,
+    "DB2 Load 1": 3,
+    "DB2 Load 2": 3,
+    "DB-3": 5,
+    "DB3 Load 1": 2,
+    "DB3 Load 2": 3
   }
 ]
