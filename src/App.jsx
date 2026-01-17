@@ -1,198 +1,163 @@
 import { useState } from "react";
+import powerData from "./data/powerData.json";
 
-/* ---------- SIMULATED DATA ---------- */
-const HOURS = [...Array(24).keys()];
-
-const generatePower = () =>
-  HOURS.map(() => (Math.random() > 0.3 ? +(Math.random() * 50).toFixed(1) : 0));
-
-const DB_DATA = [
-  { name: "DB-1", loads: ["Load 1", "Load 2"] },
-  { name: "DB-2", loads: ["Load 1", "Load 2"] },
-  { name: "DB-3", loads: ["Load 1", "Load 2"] }
-];
-
-/* ---------- STATUS ---------- */
-const getStatusColor = (value) => {
-  if (value > 0) return "lime";
-  return "gold"; // power ON but no load
+const getStatus = (value, upstreamOn) => {
+  if (!upstreamOn) return "red";
+  if (value > 0) return "green";
+  return "yellow";
 };
 
-/* ---------- COMPONENT ---------- */
 export default function App() {
-  const [hour, setHour] = useState(10);
-  const [hover, setHover] = useState(false);
+  const [timeIndex, setTimeIndex] = useState(0);
+  const data = powerData[timeIndex];
 
-  const mainPower = generatePower();
-  const dbPower = DB_DATA.map(() => generatePower());
-  const loadPower = DB_DATA.map(() =>
-    Array(2)
-      .fill(0)
-      .map(() => generatePower())
-  );
+  const mainOn = data.main > 0;
 
   return (
     <div style={styles.page}>
       <h1 style={styles.title}>Power Distribution Monitoring</h1>
 
-      {/* TIMELINE */}
-      <div
-        style={styles.timeline}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-      >
-        <span>00:00</span>
+      {/* Timeline */}
+      <div style={styles.timeline}>
+        <span>{powerData[0].time}</span>
         <input
           type="range"
           min="0"
-          max="23"
-          value={hour}
-          onChange={(e) => setHour(+e.target.value)}
+          max={powerData.length - 1}
+          value={timeIndex}
+          onChange={(e) => setTimeIndex(Number(e.target.value))}
           style={{ flex: 1 }}
         />
-        <span>{hour}:00</span>
+        <span>{data.time}</span>
       </div>
 
-      {/* MAIN LAYOUT */}
-      <div style={styles.system}>
-        {/* MAIN BOARD */}
-        <div style={styles.mainBoard}>
-          <h3>Main Board</h3>
-          {hover && <div>{mainPower[hour]} kW</div>}
-          <StatusDot value={mainPower[hour]} />
-        </div>
+      <div style={styles.container}>
+        {/* SVG WIRES */}
+        <svg style={styles.svg}>
+          {/* Main → DBs */}
+          <line x1="220" y1="160" x2="420" y2="100" stroke="lime" strokeWidth="2"/>
+          <line x1="220" y1="160" x2="420" y2="220" stroke="gold" strokeWidth="2"/>
+          <line x1="220" y1="160" x2="420" y2="340" stroke="lime" strokeWidth="2"/>
 
-        {/* BUSBAR */}
-        <div style={styles.busbar} />
+          {/* DB1 → Loads */}
+          <line x1="620" y1="100" x2="820" y2="80" stroke="lime" strokeWidth="2"/>
+          <line x1="620" y1="100" x2="820" y2="130" stroke="lime" strokeWidth="2"/>
+
+          {/* DB2 → Loads */}
+          <line x1="620" y1="220" x2="820" y2="200" stroke="lime" strokeWidth="2"/>
+          <line x1="620" y1="220" x2="820" y2="250" stroke="lime" strokeWidth="2"/>
+
+          {/* DB3 → Loads */}
+          <line x1="620" y1="340" x2="820" y2="320" stroke="lime" strokeWidth="2"/>
+          <line x1="620" y1="340" x2="820" y2="370" stroke="lime" strokeWidth="2"/>
+        </svg>
+
+        {/* MAIN BOARD */}
+        <Board
+          title="Main Board"
+          power={`${data.main} kW`}
+          status={getStatus(data.main, true)}
+          top={120}
+          left={20}
+        />
 
         {/* DBs */}
-        <div style={styles.dbColumn}>
-          {DB_DATA.map((db, i) => (
-            <div key={db.name} style={styles.dbRow}>
-              <div style={styles.dbBox}>
-                <h4>{db.name}</h4>
-                {hover && <div>{dbPower[i][hour]} kW</div>}
-                <StatusDot value={dbPower[i][hour]} />
-              </div>
+        <Board title="DB-1" power={`${data.db1} kW`} status={getStatus(data.db1, mainOn)} top={60} left={360}/>
+        <Board title="DB-2" power={`${data.db2} kW`} status={getStatus(data.db2, mainOn)} top={180} left={360}/>
+        <Board title="DB-3" power={`${data.db3} kW`} status={getStatus(data.db3, mainOn)} top={300} left={360}/>
 
-              {/* LOADS */}
-              <div style={styles.loadColumn}>
-                {db.loads.map((load, j) => (
-                  <div key={load} style={styles.loadBox}>
-                    {load}
-                    {hover && (
-                      <div style={styles.smallText}>
-                        {loadPower[i][j][hour]} kW
-                      </div>
-                    )}
-                    <StatusDot value={loadPower[i][j][hour]} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* LOADs */}
+        <Load name="DB1 Load 1" value={data.db1_load1} top={50} />
+        <Load name="DB1 Load 2" value={data.db1_load2} top={110} />
+
+        <Load name="DB2 Load 1" value={data.db2_load1} top={170} />
+        <Load name="DB2 Load 2" value={data.db2_load2} top={230} />
+
+        <Load name="DB3 Load 1" value={data.db3_load1} top={290} />
+        <Load name="DB3 Load 2" value={data.db3_load2} top={350} />
       </div>
 
       {/* LEGEND */}
       <div style={styles.legend}>
-        <span style={{ color: "lime" }}>● Consuming</span>
-        <span style={{ color: "gold" }}>● Power ON</span>
+        <span style={{ color: "lime" }}>● Operational</span>
+        <span style={{ color: "gold" }}>● Idle</span>
+        <span style={{ color: "red" }}>● Critical</span>
       </div>
     </div>
   );
 }
 
-/* ---------- STATUS DOT ---------- */
-const StatusDot = ({ value }) => (
-  <span
-    style={{
-      ...styles.dot,
-      background: getStatusColor(value)
-    }}
-  />
+/* COMPONENTS */
+
+const Board = ({ title, power, status, top, left }) => (
+  <div style={{ ...styles.board, top, left }}>
+    <h4>{title}</h4>
+    <p>{power}</p>
+    <span style={{ ...styles.dot, background: status }} />
+  </div>
 );
 
-/* ---------- STYLES ---------- */
+const Load = ({ name, value, top }) => (
+  <div style={{ ...styles.load, top }}>
+    {name}
+    <br />
+    {value} kW
+  </div>
+);
+
+/* STYLES */
+
 const styles = {
   page: {
     background: "#0f172a",
     minHeight: "100vh",
-    padding: 24,
+    padding: 20,
     color: "#e5e7eb",
-    fontFamily: "Arial"
+    fontFamily: "Arial",
   },
   title: {
-    marginBottom: 20
+    marginBottom: 20,
   },
   timeline: {
     display: "flex",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 30
+    gap: 10,
+    marginBottom: 20,
   },
-  system: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: 40
+  container: {
+    position: "relative",
+    height: 450,
   },
-  mainBoard: {
-    background: "#1e293b",
-    padding: 20,
-    borderRadius: 8,
-    width: 220,
-    position: "relative"
+  svg: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
-  busbar: {
-    width: 6,
-    height: 420,
-    background: "#facc15",
-    borderRadius: 3
-  },
-  dbColumn: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 30
-  },
-  dbRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 40
-  },
-  dbBox: {
+  board: {
+    position: "absolute",
     background: "#1e293b",
     padding: 16,
     borderRadius: 8,
     width: 180,
-    position: "relative"
   },
-  loadColumn: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 12
-  },
-  loadBox: {
+  load: {
+    position: "absolute",
+    left: 760,
+    width: 160,
     background: "#1e293b",
     padding: 10,
     borderRadius: 6,
-    width: 160,
-    position: "relative"
   },
   dot: {
     position: "absolute",
-    top: 8,
-    right: 8,
+    top: 10,
+    right: 10,
     width: 10,
     height: 10,
-    borderRadius: "50%"
+    borderRadius: "50%",
   },
   legend: {
-    marginTop: 40,
+    marginTop: 20,
     display: "flex",
-    gap: 20
+    gap: 20,
   },
-  smallText: {
-    fontSize: 12,
-    opacity: 0.8
-  }
 };
