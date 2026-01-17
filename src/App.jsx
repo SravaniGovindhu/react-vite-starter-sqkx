@@ -1,30 +1,18 @@
 import { useState } from "react";
-import data from "./powerData.json";
+import data from "./data/powerData.json";
 import "./App.css";
-
-const statusColor = (value) => {
-  if (value === 0) return "red";
-  if (value > 0 && value < 2) return "yellow";
-  return "green";
-};
-
-const Card = ({ title, value }) => (
-  <div className={`card ${statusColor(value)}`}>
-    <h4>{title}</h4>
-    <p>{value} kW</p>
-  </div>
-);
 
 export default function App() {
   const [index, setIndex] = useState(0);
-  const row = data[index];
+  const current = data[index];
 
   return (
-    <div className="container">
-      <h2>⚡ Power Distribution Monitoring</h2>
+    <div className="app">
+      <h1>⚡ Power Distribution Dashboard</h1>
 
       {/* Timeline */}
       <div className="timeline">
+        <span className="time-label">{current.time}</span>
         <input
           type="range"
           min="0"
@@ -32,42 +20,31 @@ export default function App() {
           value={index}
           onChange={(e) => setIndex(Number(e.target.value))}
         />
-        <span className="time">{row.time}</span>
       </div>
 
       {/* Main Board */}
-      <div className="section">
-        <Card title="Main Board" value={row.main} />
+      <div className="card main">
+        <h2>Main Board</h2>
+        <p>{current["Main Board"]} kW</p>
       </div>
 
       {/* Distribution Boards */}
-      <div className="db-grid">
-        {/* DB 1 */}
-        <div className="db">
-          <Card title="DB-1" value={row.db1.total} />
-          <div className="loads">
-            <Card title="Load 1" value={row.db1.l1} />
-            <Card title="Load 2" value={row.db1.l2} />
-          </div>
-        </div>
+      <div className="grid">
+        {Object.keys(current).map((key) => {
+          if (key === "time" || key === "Main Board") return null;
 
-        {/* DB 2 */}
-        <div className="db">
-          <Card title="DB-2" value={row.db2.total} />
-          <div className="loads">
-            <Card title="Load 1" value={row.db2.l1} />
-            <Card title="Load 2" value={row.db2.l2} />
-          </div>
-        </div>
+          const value = current[key];
+          let status = "green";
+          if (value === 0) status = "red";
+          else if (value < 3) status = "yellow";
 
-        {/* DB 3 */}
-        <div className="db">
-          <Card title="DB-3" value={row.db3.total} />
-          <div className="loads">
-            <Card title="Load 1" value={row.db3.l1} />
-            <Card title="Load 2" value={row.db3.l2} />
-          </div>
-        </div>
+          return (
+            <div key={key} className={`card ${status}`}>
+              <h3>{key}</h3>
+              <p>{value} kW</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Legend */}
