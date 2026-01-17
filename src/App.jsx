@@ -1,159 +1,116 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
-/* ---------- DATA GENERATION ---------- */
-const HOURS = Array.from({ length: 25 }, (_, i) => i);
+/* ---------- SIMULATED DATA ---------- */
+const HOURS = [...Array(24).keys()];
 
-const randomPower = () =>
-  HOURS.map(() => Math.random() > 0.2 ? +(Math.random() * 50).toFixed(1) : 0);
+const generatePower = () =>
+  HOURS.map(() => (Math.random() > 0.3 ? +(Math.random() * 50).toFixed(1) : 0));
+
+const DB_DATA = [
+  { name: "DB-1", loads: ["Load 1", "Load 2"] },
+  { name: "DB-2", loads: ["Load 1", "Load 2"] },
+  { name: "DB-3", loads: ["Load 1", "Load 2"] }
+];
+
+/* ---------- STATUS ---------- */
+const getStatusColor = (value) => {
+  if (value > 0) return "lime";
+  return "gold"; // power ON but no load
+};
 
 /* ---------- COMPONENT ---------- */
 export default function App() {
-  const [hour, setHour] = useState(12);
+  const [hour, setHour] = useState(10);
   const [hover, setHover] = useState(false);
-  const [lines, setLines] = useState([]);
 
-  const mainRef = useRef();
-  const dbRefs = useRef([]);
-  const loadRefs = useRef([]);
-
-  const data = {
-    main: randomPower(),
-    dbs: [
-      { name: "DB-1", loads: [randomPower(), randomPower()], power: randomPower() },
-      { name: "DB-2", loads: [randomPower(), randomPower()], power: randomPower() },
-      { name: "DB-3", loads: [randomPower(), randomPower()], power: randomPower() }
-    ]
-  };
-
-  /* ---------- STATUS ---------- */
-  const statusColor = (val) =>
-    val > 0 ? "lime" : val === 0 ? "gold" : "red";
-
-  /* ---------- DRAW WIRES ---------- */
-  useEffect(() => {
-    const newLines = [];
-
-    const mainBox = mainRef.current.getBoundingClientRect();
-
-    dbRefs.current.forEach((db, i) => {
-      const dbBox = db.getBoundingClientRect();
-
-      newLines.push({
-        x1: mainBox.right,
-        y1: mainBox.top + mainBox.height / 2,
-        x2: dbBox.left,
-        y2: dbBox.top + dbBox.height / 2,
-        color: "yellow"
-      });
-
-      loadRefs.current
-        .filter(l => l.dataset.db === i.toString())
-        .forEach(load => {
-          const loadBox = load.getBoundingClientRect();
-          newLines.push({
-            x1: dbBox.right,
-            y1: dbBox.top + dbBox.height / 2,
-            x2: loadBox.left,
-            y2: loadBox.top + loadBox.height / 2,
-            color: "lime"
-          });
-        });
-    });
-
-    setLines(newLines);
-  }, []);
+  const mainPower = generatePower();
+  const dbPower = DB_DATA.map(() => generatePower());
+  const loadPower = DB_DATA.map(() =>
+    Array(2)
+      .fill(0)
+      .map(() => generatePower())
+  );
 
   return (
     <div style={styles.page}>
-      <h1>Power Distribution Monitoring</h1>
+      <h1 style={styles.title}>Power Distribution Monitoring</h1>
 
       {/* TIMELINE */}
-      <div style={styles.timeline}>
-        <span>00</span>
+      <div
+        style={styles.timeline}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        <span>00:00</span>
         <input
           type="range"
           min="0"
-          max="24"
+          max="23"
           value={hour}
           onChange={(e) => setHour(+e.target.value)}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
           style={{ flex: 1 }}
         />
         <span>{hour}:00</span>
       </div>
 
-      {/* LAYOUT */}
-      <div style={styles.layout}>
+      {/* MAIN LAYOUT */}
+      <div style={styles.system}>
         {/* MAIN BOARD */}
-        <div ref={mainRef} style={styles.board}>
+        <div style={styles.mainBoard}>
           <h3>Main Board</h3>
-          {hover && <p>{data.main[hour]} kW</p>}
-          <Dot color={statusColor(data.main[hour])} />
+          {hover && <div>{mainPower[hour]} kW</div>}
+          <StatusDot value={mainPower[hour]} />
         </div>
 
+        {/* BUSBAR */}
+        <div style={styles.busbar} />
+
         {/* DBs */}
-        <div style={styles.column}>
-          {data.dbs.map((db, i) => (
-            <div
-              key={i}
-              ref={el => dbRefs.current[i] = el}
-              style={styles.board}
-            >
-              <h4>{db.name}</h4>
-              {hover && <p>{db.power[hour]} kW</p>}
-              <Dot color={statusColor(db.power[hour])} />
+        <div style={styles.dbColumn}>
+          {DB_DATA.map((db, i) => (
+            <div key={db.name} style={styles.dbRow}>
+              <div style={styles.dbBox}>
+                <h4>{db.name}</h4>
+                {hover && <div>{dbPower[i][hour]} kW</div>}
+                <StatusDot value={dbPower[i][hour]} />
+              </div>
+
+              {/* LOADS */}
+              <div style={styles.loadColumn}>
+                {db.loads.map((load, j) => (
+                  <div key={load} style={styles.loadBox}>
+                    {load}
+                    {hover && (
+                      <div style={styles.smallText}>
+                        {loadPower[i][j][hour]} kW
+                      </div>
+                    )}
+                    <StatusDot value={loadPower[i][j][hour]} />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
-
-        {/* LOADs */}
-        <div style={styles.column}>
-          {data.dbs.map((db, i) =>
-            db.loads.map((load, j) => (
-              <div
-                key={`${i}-${j}`}
-                ref={el => loadRefs.current.push(el)}
-                data-db={i}
-                style={styles.load}
-              >
-                Load {i + 1}.{j + 1}
-                {hover && <div>{load[hour]} kW</div>}
-                <Dot color={statusColor(load[hour])} />
-              </div>
-            ))
-          )}
-        </div>
       </div>
 
-      {/* WIRES */}
-      <svg style={styles.svg}>
-        {lines.map((l, i) => (
-          <line
-            key={i}
-            x1={l.x1}
-            y1={l.y1}
-            x2={l.x2}
-            y2={l.y2}
-            stroke={l.color}
-            strokeWidth="3"
-          />
-        ))}
-      </svg>
-
       {/* LEGEND */}
-      <div style={styles.footer}>
+      <div style={styles.legend}>
         <span style={{ color: "lime" }}>● Consuming</span>
         <span style={{ color: "gold" }}>● Power ON</span>
-        <span style={{ color: "red" }}>● Power OFF</span>
       </div>
     </div>
   );
 }
 
-/* ---------- DOT ---------- */
-const Dot = ({ color }) => (
-  <span style={{ ...styles.dot, background: color }} />
+/* ---------- STATUS DOT ---------- */
+const StatusDot = ({ value }) => (
+  <span
+    style={{
+      ...styles.dot,
+      background: getStatusColor(value)
+    }}
+  />
 );
 
 /* ---------- STYLES ---------- */
@@ -161,55 +118,81 @@ const styles = {
   page: {
     background: "#0f172a",
     minHeight: "100vh",
-    padding: 20,
+    padding: 24,
     color: "#e5e7eb",
-    fontFamily: "Arial",
-    position: "relative"
+    fontFamily: "Arial"
+  },
+  title: {
+    marginBottom: 20
   },
   timeline: {
     display: "flex",
-    gap: 10,
+    alignItems: "center",
+    gap: 12,
     marginBottom: 30
   },
-  layout: {
+  system: {
     display: "flex",
-    gap: 50
+    alignItems: "flex-start",
+    gap: 40
   },
-  column: {
+  mainBoard: {
+    background: "#1e293b",
+    padding: 20,
+    borderRadius: 8,
+    width: 220,
+    position: "relative"
+  },
+  busbar: {
+    width: 6,
+    height: 420,
+    background: "#facc15",
+    borderRadius: 3
+  },
+  dbColumn: {
     display: "flex",
     flexDirection: "column",
-    gap: 20
+    gap: 30
   },
-  board: {
+  dbRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 40
+  },
+  dbBox: {
     background: "#1e293b",
     padding: 16,
     borderRadius: 8,
-    width: 200,
+    width: 180,
     position: "relative"
   },
-  load: {
+  loadColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12
+  },
+  loadBox: {
     background: "#1e293b",
-    padding: 12,
+    padding: 10,
     borderRadius: 6,
-    width: 200,
+    width: 160,
     position: "relative"
   },
   dot: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: 8,
+    right: 8,
     width: 10,
     height: 10,
     borderRadius: "50%"
   },
-  svg: {
-    position: "absolute",
-    inset: 0,
-    pointerEvents: "none"
-  },
-  footer: {
+  legend: {
     marginTop: 40,
     display: "flex",
     gap: 20
+  },
+  smallText: {
+    fontSize: 12,
+    opacity: 0.8
   }
 };
