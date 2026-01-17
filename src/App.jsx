@@ -1,57 +1,66 @@
 import { useState } from "react";
-import data from "./data/powerData.json";
 import "./App.css";
 
 export default function App() {
-  const [index, setIndex] = useState(0);
-  const current = data[index];
+  const [time, setTime] = useState("10:10");
 
   return (
     <div className="app">
-      <h1>⚡ Power Distribution Dashboard</h1>
+      <h1>Power Distribution Monitoring</h1>
 
       {/* Timeline */}
       <div className="timeline">
-        <span className="time-label">{current.time}</span>
         <input
           type="range"
           min="0"
-          max={data.length - 1}
-          value={index}
-          onChange={(e) => setIndex(Number(e.target.value))}
+          max="24"
+          defaultValue="10"
+          onChange={(e) => setTime(`${e.target.value}:00`)}
         />
+        <span className="time-label">{time}</span>
       </div>
 
       {/* Main Board */}
-      <div className="card main">
-        <h2>Main Board</h2>
-        <p>{current["Main Board"]} kW</p>
+      <div className="main-board green">
+        <h3>Main Board</h3>
+        <p>12 kW</p>
       </div>
 
       {/* Distribution Boards */}
-      <div className="grid">
-        {Object.keys(current).map((key) => {
-          if (key === "time" || key === "Main Board") return null;
+      <div className="db-row">
+        <div className="db yellow">
+          <h4>DB-1</h4>
+          <p>1 kW</p>
+          <div className="loads">
+            <div className="load red">Load 1 – 0 kW</div>
+            <div className="load yellow">Load 2 – 1 kW</div>
+          </div>
+        </div>
 
-          const value = current[key];
-          let status = "green";
-          if (value === 0) status = "red";
-          else if (value < 3) status = "yellow";
+        <div className="db green">
+          <h4>DB-2</h4>
+          <p>3 kW</p>
+          <div className="loads">
+            <div className="load yellow">Load 1 – 1 kW</div>
+            <div className="load green">Load 2 – 2 kW</div>
+          </div>
+        </div>
 
-          return (
-            <div key={key} className={`card ${status}`}>
-              <h3>{key}</h3>
-              <p>{value} kW</p>
-            </div>
-          );
-        })}
+        <div className="db green">
+          <h4>DB-3</h4>
+          <p>5 kW</p>
+          <div className="loads">
+            <div className="load green">Load 1 – 2 kW</div>
+            <div className="load green">Load 2 – 3 kW</div>
+          </div>
+        </div>
       </div>
 
       {/* Legend */}
       <div className="legend">
-        <span className="green">● Consuming</span>
-        <span className="yellow">● Power ON, No Load</span>
-        <span className="red">● Power OFF</span>
+        <div className="legend-item consuming">● Consuming</div>
+        <div className="legend-item on">● Power ON</div>
+        <div className="legend-item off">● Power OFF</div>
       </div>
     </div>
   );
