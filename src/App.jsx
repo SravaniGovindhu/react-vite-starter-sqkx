@@ -1,93 +1,162 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
-function App() {
-  const [time, setTime] = useState(12);
+/* ---------- DATA GENERATION ---------- */
+const HOURS = Array.from({ length: 25 }, (_, i) => i);
+
+const randomPower = () =>
+  HOURS.map(() => Math.random() > 0.2 ? +(Math.random() * 50).toFixed(1) : 0);
+
+/* ---------- COMPONENT ---------- */
+export default function App() {
+  const [hour, setHour] = useState(12);
+  const [hover, setHover] = useState(false);
+  const [lines, setLines] = useState([]);
+
+  const mainRef = useRef();
+  const dbRefs = useRef([]);
+  const loadRefs = useRef([]);
+
+  const data = {
+    main: randomPower(),
+    dbs: [
+      { name: "DB-1", loads: [randomPower(), randomPower()], power: randomPower() },
+      { name: "DB-2", loads: [randomPower(), randomPower()], power: randomPower() },
+      { name: "DB-3", loads: [randomPower(), randomPower()], power: randomPower() }
+    ]
+  };
+
+  /* ---------- STATUS ---------- */
+  const statusColor = (val) =>
+    val > 0 ? "lime" : val === 0 ? "gold" : "red";
+
+  /* ---------- DRAW WIRES ---------- */
+  useEffect(() => {
+    const newLines = [];
+
+    const mainBox = mainRef.current.getBoundingClientRect();
+
+    dbRefs.current.forEach((db, i) => {
+      const dbBox = db.getBoundingClientRect();
+
+      newLines.push({
+        x1: mainBox.right,
+        y1: mainBox.top + mainBox.height / 2,
+        x2: dbBox.left,
+        y2: dbBox.top + dbBox.height / 2,
+        color: "yellow"
+      });
+
+      loadRefs.current
+        .filter(l => l.dataset.db === i.toString())
+        .forEach(load => {
+          const loadBox = load.getBoundingClientRect();
+          newLines.push({
+            x1: dbBox.right,
+            y1: dbBox.top + dbBox.height / 2,
+            x2: loadBox.left,
+            y2: loadBox.top + loadBox.height / 2,
+            color: "lime"
+          });
+        });
+    });
+
+    setLines(newLines);
+  }, []);
 
   return (
     <div style={styles.page}>
-      {/* Header */}
-      <h1 style={styles.title}>Power Distribution Monitoring</h1>
+      <h1>Power Distribution Monitoring</h1>
 
-      {/* Timeline */}
+      {/* TIMELINE */}
       <div style={styles.timeline}>
-        <span>00:00</span>
+        <span>00</span>
         <input
           type="range"
           min="0"
           max="24"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
+          value={hour}
+          onChange={(e) => setHour(+e.target.value)}
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
           style={{ flex: 1 }}
         />
-        <span>{time}:00</span>
+        <span>{hour}:00</span>
       </div>
 
-      {/* Layout */}
+      {/* LAYOUT */}
       <div style={styles.layout}>
-        {/* Main Board */}
-        <div style={styles.board} id="main-board">
+        {/* MAIN BOARD */}
+        <div ref={mainRef} style={styles.board}>
           <h3>Main Board</h3>
-          <p>Voltage: 415 V</p>
-          <p>Power: 480 kW</p>
-          <span style={styles.greenDot}></span>
+          {hover && <p>{data.main[hour]} kW</p>}
+          <Dot color={statusColor(data.main[hour])} />
         </div>
 
-        {/* Distribution Boards */}
-        <div style={styles.column} id="db-column">
-          <div style={styles.board} id="db1">
-            <h4>DB-1</h4>
-            <p>Load: 85 kW</p>
-            <span style={styles.greenDot}></span>
-          </div>
-
-          <div style={styles.board} id="db2">
-            <h4>DB-2</h4>
-            <p>Load: 78 kW</p>
-            <span style={styles.yellowDot}></span>
-          </div>
-
-          <div style={styles.board} id="db3">
-            <h4>DB-3</h4>
-            <p>Load: 62 kW</p>
-            <span style={styles.greenDot}></span>
-          </div>
+        {/* DBs */}
+        <div style={styles.column}>
+          {data.dbs.map((db, i) => (
+            <div
+              key={i}
+              ref={el => dbRefs.current[i] = el}
+              style={styles.board}
+            >
+              <h4>{db.name}</h4>
+              {hover && <p>{db.power[hour]} kW</p>}
+              <Dot color={statusColor(db.power[hour])} />
+            </div>
+          ))}
         </div>
 
-        {/* Loads */}
-        <div style={styles.column} id="loads-column">
-          <div style={styles.load} id="load1">Load 1 – 32 kW</div>
-          <div style={styles.load} id="load2">Load 2 – 18 kW</div>
-          <div style={styles.load} id="load3">Load 3 – 45 kW</div>
-          <div style={styles.load} id="load4">Load 4 – 28 kW</div>
+        {/* LOADs */}
+        <div style={styles.column}>
+          {data.dbs.map((db, i) =>
+            db.loads.map((load, j) => (
+              <div
+                key={`${i}-${j}`}
+                ref={el => loadRefs.current.push(el)}
+                data-db={i}
+                style={styles.load}
+              >
+                Load {i + 1}.{j + 1}
+                {hover && <div>{load[hour]} kW</div>}
+                <Dot color={statusColor(load[hour])} />
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {/* SVG Wires */}
+      {/* WIRES */}
       <svg style={styles.svg}>
-        {/* Main Board to DBs */}
-        <line x1="200" y1="50" x2="400" y2="50" stroke="yellow" strokeWidth="3" />
-        <line x1="200" y1="50" x2="400" y2="130" stroke="yellow" strokeWidth="3" />
-        <line x1="200" y1="50" x2="400" y2="210" stroke="yellow" strokeWidth="3" />
-
-        {/* DBs to Loads */}
-        <line x1="600" y1="50" x2="820" y2="0" stroke="lime" strokeWidth="2" />
-        <line x1="600" y1="130" x2="820" y2="50" stroke="lime" strokeWidth="2" />
-        <line x1="600" y1="210" x2="820" y2="100" stroke="lime" strokeWidth="2" />
-        <line x1="600" y1="210" x2="820" y2="180" stroke="lime" strokeWidth="2" />
+        {lines.map((l, i) => (
+          <line
+            key={i}
+            x1={l.x1}
+            y1={l.y1}
+            x2={l.x2}
+            y2={l.y2}
+            stroke={l.color}
+            strokeWidth="3"
+          />
+        ))}
       </svg>
 
-      {/* Footer */}
+      {/* LEGEND */}
       <div style={styles.footer}>
-        <span style={{ color: "lime" }}>● Operational</span>
-        <span style={{ color: "gold" }}>● Warning</span>
-        <span style={{ color: "red" }}>● Critical</span>
+        <span style={{ color: "lime" }}>● Consuming</span>
+        <span style={{ color: "gold" }}>● Power ON</span>
+        <span style={{ color: "red" }}>● Power OFF</span>
       </div>
     </div>
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ---------- DOT ---------- */
+const Dot = ({ color }) => (
+  <span style={{ ...styles.dot, background: color }} />
+);
 
+/* ---------- STYLES ---------- */
 const styles = {
   page: {
     background: "#0f172a",
@@ -97,19 +166,14 @@ const styles = {
     fontFamily: "Arial",
     position: "relative"
   },
-  title: {
-    marginBottom: 20
-  },
   timeline: {
     display: "flex",
-    alignItems: "center",
     gap: 10,
     marginBottom: 30
   },
   layout: {
     display: "flex",
-    gap: 40,
-    position: "relative"
+    gap: 50
   },
   column: {
     display: "flex",
@@ -120,46 +184,32 @@ const styles = {
     background: "#1e293b",
     padding: 16,
     borderRadius: 8,
-    position: "relative",
-    width: 200
+    width: 200,
+    position: "relative"
   },
   load: {
     background: "#1e293b",
     padding: 12,
     borderRadius: 6,
-    width: 200
+    width: 200,
+    position: "relative"
   },
-  greenDot: {
+  dot: {
     position: "absolute",
     top: 10,
     right: 10,
     width: 10,
     height: 10,
-    borderRadius: "50%",
-    background: "lime"
+    borderRadius: "50%"
   },
-  yellowDot: {
+  svg: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    width: 10,
-    height: 10,
-    borderRadius: "50%",
-    background: "gold"
+    inset: 0,
+    pointerEvents: "none"
   },
   footer: {
     marginTop: 40,
     display: "flex",
     gap: 20
-  },
-  svg: {
-    position: "absolute",
-    top: 150,
-    left: 0,
-    width: "100%",
-    height: "300px",
-    pointerEvents: "none"
   }
 };
-
-export default App;
