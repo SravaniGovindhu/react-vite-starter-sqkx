@@ -1,63 +1,88 @@
 body {
+  margin: 0;
   background: #0f172a;
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  padding: 20px;
   color: #e5e7eb;
-  font-family: "Segoe UI", sans-serif;
 }
 
-.container {
-  padding: 24px;
-}
-
-h2 {
+h1 {
   text-align: center;
   margin-bottom: 20px;
 }
 
+/* Timeline */
 .timeline {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  background: #020617;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
 }
 
-.time {
+.timeline input {
+  width: 100%;
+}
+
+.time-label {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* Cards */
+.card {
+  background: #020617;
+  padding: 20px;
+  border-radius: 14px;
+  text-align: center;
+  border: 2px solid #334155;
+}
+
+.card h2,
+.card h3 {
+  margin: 0 0 10px;
+}
+
+.card p {
+  font-size: 22px;
   font-weight: bold;
 }
 
-.section {
+/* Status colors */
+.green {
+  border-color: #22c55e;
+}
+
+.yellow {
+  border-color: #eab308;
+}
+
+.red {
+  border-color: #ef4444;
+}
+
+/* Main board */
+.main {
+  margin-bottom: 20px;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+/* Legend */
+.legend {
+  margin-top: 20px;
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
-}
-
-.db-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-}
-
-.db {
-  border: 1px solid #334155;
-  padding: 16px;
-  border-radius: 10px;
-}
-
-.loads {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.card {
-  background: #020617;
-  border-radius: 8px;
-  padding: 14px;
-  text-align: center;
-  border: 2px solid transparent;
-}
-
-.card h4 {
-  margin-bottom: 6px;
 }
 
 .legend .green {
@@ -73,11 +98,4 @@ h2 {
 .legend .red {
   color: #ef4444;
   font-weight: 600;
-}
-
-.legend {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
 }
