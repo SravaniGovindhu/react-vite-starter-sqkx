@@ -1,68 +1,71 @@
 import { useState } from "react";
-import powerData from "./data/powerData.json";
+import data from "./powerData.json";
 import "./App.css";
+
+const statusColor = (value) => {
+  if (value === 0) return "red";
+  if (value > 0 && value < 2) return "yellow";
+  return "green";
+};
+
+const Card = ({ title, value }) => (
+  <div className={`card ${statusColor(value)}`}>
+    <h4>{title}</h4>
+    <p>{value} kW</p>
+  </div>
+);
 
 export default function App() {
   const [index, setIndex] = useState(0);
-  const data = powerData[index];
-
-  const statusColor = (value) => {
-    if (value === 0) return "red";
-    if (value > 0 && value < 2) return "yellow";
-    return "green";
-  };
-
-  const Box = ({ title, value }) => (
-    <div className={`box ${statusColor(value)}`}>
-      <h3>{title}</h3>
-      <p>{value} kW</p>
-      <span className="popup">
-        Time: {data.time} <br />
-        Power: {value} kW
-      </span>
-    </div>
-  );
+  const row = data[index];
 
   return (
     <div className="container">
+      <h2>⚡ Power Distribution Monitoring</h2>
+
       {/* Timeline */}
       <div className="timeline">
         <input
           type="range"
           min="0"
-          max={powerData.length - 1}
+          max={data.length - 1}
           value={index}
           onChange={(e) => setIndex(Number(e.target.value))}
         />
-        <div className="time-label">{data.time}</div>
+        <span className="time">{row.time}</span>
       </div>
 
       {/* Main Board */}
-      <Box title="Main Board" value={data.main} />
+      <div className="section">
+        <Card title="Main Board" value={row.main} />
+      </div>
 
       {/* Distribution Boards */}
-      <div className="db-row">
+      <div className="db-grid">
+        {/* DB 1 */}
         <div className="db">
-          <Box title="DB-1" value={data.db1} />
+          <Card title="DB-1" value={row.db1.total} />
           <div className="loads">
-            <Box title="Load 1" value={data.db1_l1} />
-            <Box title="Load 2" value={data.db1_l2} />
+            <Card title="Load 1" value={row.db1.l1} />
+            <Card title="Load 2" value={row.db1.l2} />
           </div>
         </div>
 
+        {/* DB 2 */}
         <div className="db">
-          <Box title="DB-2" value={data.db2} />
+          <Card title="DB-2" value={row.db2.total} />
           <div className="loads">
-            <Box title="Load 1" value={data.db2_l1} />
-            <Box title="Load 2" value={data.db2_l2} />
+            <Card title="Load 1" value={row.db2.l1} />
+            <Card title="Load 2" value={row.db2.l2} />
           </div>
         </div>
 
+        {/* DB 3 */}
         <div className="db">
-          <Box title="DB-3" value={data.db3} />
+          <Card title="DB-3" value={row.db3.total} />
           <div className="loads">
-            <Box title="Load 1" value={data.db3_l1} />
-            <Box title="Load 2" value={data.db3_l2} />
+            <Card title="Load 1" value={row.db3.l1} />
+            <Card title="Load 2" value={row.db3.l2} />
           </div>
         </div>
       </div>
@@ -70,7 +73,7 @@ export default function App() {
       {/* Legend */}
       <div className="legend">
         <span className="green">● Consuming</span>
-        <span className="yellow">● Power ON</span>
+        <span className="yellow">● Power ON, No Load</span>
         <span className="red">● Power OFF</span>
       </div>
     </div>
