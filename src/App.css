@@ -60,9 +60,20 @@ h2 {
   margin-bottom: 6px;
 }
 
-.green { border-color: #22c55e; }
-.yellow { border-color: #eab308; }
-.red { border-color: #ef4444; }
+.legend .green {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.legend .yellow {
+  color: #eab308;
+  font-weight: 600;
+}
+
+.legend .red {
+  color: #ef4444;
+  font-weight: 600;
+}
 
 .legend {
   margin-top: 30px;
